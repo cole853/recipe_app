@@ -57,3 +57,5 @@ group :test do
 end
 
 gem "vite_rails", "~> 3.0"
+
+gem "importmap-rails", "~> 2.2"

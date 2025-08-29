@@ -1,30 +1,48 @@
 <template>
-  <div>
-    <h1>{{ message }}</h1>
-    <button @click="fetchRecipes">Get Recipes</button>
+  <h1>Recipe Search</h1>
+  <p>enter ingredients separated by a comma</p>
+  <input 
+    v-model="ingredients" 
+    class="ingredient-input" 
+    placeholder="enter ingredients" 
+    @keyup.enter="searchResults"
+  />
+  <v-btn @click="searchResults">Search</v-btn>
 
-    <div v-if="recipes.length > 0">
-      <p v-for="recipe in recipes" :key="recipe">
-        {{ recipe }}
-      </p>
-    </div>
+  <div v-if="result.length > 0">
+    <p v-for="recipe in result" :key="recipe">
+      {{ recipe }}
+    </p>
   </div>
 </template>
+
 <script>
+import { ref } from 'vue'
+
   export default {
-    data() {
-      return {
-        message: 'Hello, Vue!',
-        recipes: []
+    setup() {
+      const ingredients = ref('')
+      const result = ref([])
+
+      const searchResults = () => {
+        if (!ingredients.value) return
+
+        fetch(`/recipes/search?ingredients=${encodeURIComponent(ingredients.value)}`)
+        .then(response => response.json())
+        .then(data => {
+          result.value = data.recipes
+        }).catch(error => { console.error('Error:', error)})
       }
-    },
-    methods: {
-      fetchRecipes() {
-        fetch('/recipes/recipeNames').then(response => response.json()).then(data => {this.recipes = data.recipes})
+
+      return {
+        ingredients,
+        result,
+        searchResults
       }
     }
   }
 </script>
+
 <style>
   h1 {
     color: blue;

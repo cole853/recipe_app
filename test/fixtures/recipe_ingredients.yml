@@ -1,9 +1,101 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# THE FOLLOWING IS FROM DEEPSEEK AI
+cake_flour:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:chocolate_cake) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:flour) %>
 
-one:
-  recipe_id: 1
-  ingredient_id: 1
+cake_sugar:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:chocolate_cake) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:sugar) %>
 
-two:
-  recipe_id: 1
-  ingredient_id: 1
+cake_eggs:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:chocolate_cake) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:eggs) %>
+
+cake_butter:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:chocolate_cake) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:butter) %>
+
+cake_milk:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:chocolate_cake) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:milk) %>
+
+cookies_flour:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:sugar_cookies) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:flour) %>
+
+cookies_sugar:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:sugar_cookies) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:sugar) %>
+
+cookies_butter:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:sugar_cookies) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:butter) %>
+
+cookies_eggs:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:sugar_cookies) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:eggs) %>
+
+cookies_vanilla:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:sugar_cookies) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:vanilla) %>
+
+omelette_eggs:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:omelette) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:eggs) %>
+
+omelette_milk:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:omelette) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:milk) %>
+
+quiche_ham:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:ham_spinach_quiche) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:ham) %>
+
+quiche_spinach:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:ham_spinach_quiche) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:spinach) %>
+
+quiche_mozzarella:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:ham_spinach_quiche) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:mozzarella_cheese) %>
+
+quiche_eggs:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:ham_spinach_quiche) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:eggs) %>
+
+quiche_milk:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:ham_spinach_quiche) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:milk) %>
+
+caprese_tomato:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:caprese_salad) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:tomato) %>
+
+caprese_mozzarella:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:caprese_salad) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:mozzarella_cheese) %>
+
+caprese_basil:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:caprese_salad) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:basil) %>
+
+caprese_olive_oil:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:caprese_salad) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:olive_oil) %>
+
+strawberry_butter_honey:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:strawberry_butter) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:honey) %>
+
+strawberry_butter_strawberries:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:strawberry_butter) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:strawberries) %>
+
+strawberry_butter_cooking_oil:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:strawberry_butter) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:cooking_oil) %>
+
+strawberry_butter_unsalted_butter:
+  recipe_id: <%= ActiveRecord::FixtureSet.identify(:strawberry_butter) %>
+  ingredient_id: <%= ActiveRecord::FixtureSet.identify(:unsalted_butter) %>

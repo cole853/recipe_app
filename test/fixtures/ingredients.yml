@@ -1,7 +1,97 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# THE FOLLOWING IS FROM DEEPSEEK AI
+flour:
+  name: flour
+
+sugar:
+  name: sugar
 
 eggs:
   name: eggs
 
-cheese:
-  name: cheese
+butter:
+  name: butter
+
+milk:
+  name: milk
+
+chocolate_chips:
+  name: chocolate chips
+
+vanilla:
+  name: vanilla
+
+baking_soda:
+  name: baking soda
+
+salt:
+  name: salt
+
+ham:
+  name: ham
+
+spinach:
+  name: spinach
+
+mozzarella_cheese:
+  name: mozzarella cheese
+
+tomato:
+  name: tomato
+
+basil:
+  name: basil
+
+olive_oil:
+  name: olive oil
+
+garlic:
+  name: garlic
+
+onion:
+  name: onion
+
+carrot:
+  name: carrot
+
+celery:
+  name: celery
+
+chicken:
+  name: chicken
+
+beef:
+  name: beef
+
+rice:
+  name: rice
+
+pasta:
+  name: pasta
+
+potato:
+  name: potato
+
+lettuce:
+  name: lettuce
+
+cucumber:
+  name: cucumber
+
+avocado:
+  name: avocado
+
+lemon:
+  name: lemon
+
+honey:
+  name: honey
+
+strawberries:
+  name: strawberries
+
+cooking_oil:
+  name: cooking oil
+
+unsalted_butter:
+  name: unsalted butter

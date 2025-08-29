@@ -1,9 +1,121 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# THE FOLLOWING IS FROM DEEPSEEK AI
+# test/fixtures/recipes.yml
+chocolate_cake:
+  name: Chocolate Cake
+  amounts: |
+    2 cups flour
+    1 cup sugar
+    3 eggs
+    1/2 cup butter
+    1 cup milk
+  instructions: |
+    1. Mix dry ingredients
+    2. Add wet ingredients
+    3. Bake at 350°F for 30 minutes
+  link: https://example.com/chocolate-cake
 
-one:
-  name: MyString
-  instructions: MyString
+sugar_cookies:
+  name: Sugar Cookies
+  amounts: |
+    2 1/2 cups flour
+    1 cup sugar
+    1 cup butter
+    2 eggs
+    1 tsp vanilla
+  instructions: |
+    1. Cream butter and sugar
+    2. Add eggs and vanilla
+    3. Mix in flour
+    4. Bake at 375°F for 8-10 minutes
+  link: https://example.com/sugar-cookies
 
-two:
-  name: MyString
-  instructions: MyString
+omelette:
+  name: Omelette
+  amounts: |
+    3 eggs
+    2 tbsp milk
+    Salt and pepper to taste
+  instructions: |
+    1. Beat eggs with milk
+    2. Cook in buttered pan
+    3. Add fillings and fold
+  link: https://example.com/omelette
+
+ham_spinach_quiche:
+  name: Ham and Spinach Quiche
+  amounts: |
+    1 cup ham, diced
+    2 cups spinach
+    1 cup mozzarella cheese
+    4 eggs
+    1 cup milk
+  instructions: |
+    1. Preheat oven to 375°F
+    2. Mix all ingredients
+    3. Pour into pie crust
+    4. Bake for 45 minutes
+  link: https://example.com/ham-spinach-quiche
+
+caprese_salad:
+  name: Caprese Salad
+  amounts: |
+    2 tomatoes, sliced
+    8 oz mozzarella cheese, sliced
+    1/4 cup fresh basil
+    2 tbsp olive oil
+  instructions: |
+    1. Arrange tomato and mozzarella slices
+    2. Top with basil
+    3. Drizzle with olive oil
+  link: https://example.com/caprese-salad
+
+strawberry_butter:
+  name: Strawberry Butter
+  amounts: |
+    1/2 cup honey
+    1 cup fresh strawberries
+    2 tbsp cooking oil
+    1/2 cup unsalted butter
+  instructions: |
+    1. Blend all ingredients
+    2. Chill before serving
+  link: https://example.com/strawberry-butter
+
+chicken_soup:
+  name: Chicken Soup
+  amounts: |
+    1 chicken, whole
+    2 carrots, chopped
+    2 celery stalks, chopped
+    1 onion, chopped
+  instructions: |
+    1. Boil chicken with vegetables
+    2. Simmer for 2 hours
+    3. Remove chicken and shred
+  link: https://example.com/chicken-soup
+
+beef_stew:
+  name: Beef Stew
+  amounts: |
+    2 lbs beef, cubed
+    4 potatoes, chopped
+    3 carrots, chopped
+    1 onion, chopped
+  instructions: |
+    1. Brown beef
+    2. Add vegetables and broth
+    3. Simmer for 2 hours
+  link: https://example.com/beef-stew
+
+green_salad:
+  name: Green Salad
+  amounts: |
+    4 cups lettuce
+    1 cucumber, sliced
+    1 avocado, sliced
+    1 lemon, juiced
+  instructions: |
+    1. Combine all ingredients
+    2. Toss with dressing
+  link: https://example.com/green-salad
