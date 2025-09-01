@@ -3,10 +3,12 @@
 
     <!-- App bar -->
     <v-app-bar app color="#5EC7A1">
-      <v-toolbar-title class="text-center" style="width: 100%">
+      <v-toolbar-title class="text-center ml-8" style="width: 100%">
         Recipe Search
       </v-toolbar-title>
-      <v-btn class="custom-btn">Add Recipe</v-btn>
+      <v-row.align-end class="mr-8">
+          <v-btn class="custom-btn">Add Recipe</v-btn>
+      </v-row.align-end>
     </v-app-bar>
 
     <!-- main body -->
@@ -23,16 +25,19 @@
             label="enter ingredients separated by a comma"
             class="ingredient_input"
             v-model="ingredients" 
-            placeholder="apples, oranges, grapes" 
-            @keyup.enter="searchResults"
+            placeholder="apples, oranges, grapes, . . ." 
+            @keyup.enter="freshSearch"
           />
 
-          <!-- Search button -->
-          <v-btn @click="searchResults" color="#5EC7A1">Search</v-btn>
+          <!-- Search button and result number display-->
+          <div class="d-flex align-center justify-space-between">
+          <v-btn @click="freshSearch" class="custom-btn" color="#5EC7A1">Search</v-btn>
+          <v-card variant="default" :text="resultCount"/>
+          </div>
 
           <!-- Results -->
-          <v-infinite-scroll :height="300" class="mt-4 rounded-lg" color="#5EC7A1" :style="{backgroundColor: '#3e69b4'}">
-              <template v-for="(recipe, index) in result" :key="recipe">
+          <v-infinite-scroll ref="infiniteScrollRef" :height="300" @load="load" class="mt-3 rounded-lg" color="#5EC7A1" :style="{backgroundColor: '#536c77'}">
+              <template v-for="(recipe, index) in recipes" :key="recipe">
                 <div :style="{backgroundColor: index % 2 === 0 ? '#5EC7A1' : 'white'}" class="pa-2 d-flex align-center justify-space-between">
                   {{ recipe }}
                   <v-btn class="custom-btn">view</v-btn>
@@ -48,32 +53,79 @@
 
 <script>
 import { ref } from 'vue'
+import axios from 'axios'
 
   export default {
     setup() {
+      const recipes = ref([])
+      const currentPage = ref(1)
+      const hasMore = ref(true)
       const ingredients = ref('')
-      const result = ref([])
+      const resultCount = ref('-- Recipes Found')
+      const infiniteScrollRef = ref(null)
 
-      async function searchResults ({ done }) {
-        if (!ingredients.value) return
+      async function freshSearch() {
+        recipes.value = []
+        currentPage.value = 1
+        hasMore.value = true
 
-        fetch(`/recipes/search?ingredients=${encodeURIComponent(ingredients.value)}`)
-        .then(response => response.json())
-        .then(data => {
-          result.value = data.recipes
-        }).catch(error => { console.error('Error:', error)})
+        infiniteScrollRef.value.reset()
 
-        done("ok")
+        await load
+      }
+      
+      async function load ({ done } = {}) {
+        if (ingredients.value.length === 0 || !hasMore) {
+          done?.('empty')
+          return
+        }
+        try {
+          const response = await axios.get('/recipes/search', {
+            params: {
+              ingredients: ingredients.value,
+              page: currentPage.value
+            }
+          });
+
+          if (response.data.recipes.length === 0) {
+            done?.('empty')
+            resultCount.value = "" + 0 + " Recipes Found"
+            return
+          }
+
+          recipes.value = recipes.value.concat(response.data.recipes);
+          hasMore.value = response.data.has_next;
+          resultCount.value = "" + response.data.result_count + " Recipes Found"
+          console.log(response.data.result_count)
+          currentPage.value++;
+
+          if (!response.data.has_next) {
+            done?.('empty')
+            return
+          }
+          else {
+            done?.('ok')
+          }
+
+        } catch (error) {
+          console.error('Error Loading Recipes:', error)
+          done('error')
+        } finally {
+        }
       }
 
       return {
+        recipes,
         ingredients,
-        result,
-        searchResults
+        resultCount,
+        infiniteScrollRef,
+        load,
+        freshSearch
       }
     }
   }
 </script>
+
 
 <style>
 .custom-btn {
