@@ -3,12 +3,10 @@
 
     <!-- App bar -->
     <v-app-bar app color="#5EC7A1">
-      <v-toolbar-title class="text-center ml-8" style="width: 100%">
+      <v-app-bar-title class="text-center">
         Recipe Search
-      </v-toolbar-title>
-      <v-row.align-end class="mr-8">
-          <v-btn class="custom-btn">Add Recipe</v-btn>
-      </v-row.align-end>
+      </v-app-bar-title>
+      <v-btn class="custom-btn mr-8">Add Recipe</v-btn>
     </v-app-bar>
 
     <!-- main body -->
@@ -32,15 +30,15 @@
           <!-- Search button and result number display-->
           <div class="d-flex align-center justify-space-between">
           <v-btn @click="freshSearch" class="custom-btn" color="#5EC7A1">Search</v-btn>
-          <v-card variant="default" :text="resultCount"/>
+          <v-card variant="default" :text="resultCount" style="font-size: 25px"/>
           </div>
 
           <!-- Results -->
           <v-infinite-scroll ref="infiniteScrollRef" :height="300" @load="load" class="mt-3 rounded-lg" color="#5EC7A1" :style="{backgroundColor: '#536c77'}">
               <template v-for="(recipe, index) in recipes" :key="recipe">
                 <div :style="{backgroundColor: index % 2 === 0 ? '#5EC7A1' : 'white'}" class="pa-2 d-flex align-center justify-space-between">
-                  {{ recipe }}
-                  <v-btn class="custom-btn">view</v-btn>
+                  {{ recipe[1] }}
+                  <v-btn :to="'/recipe/' + recipe[0]" class="custom-btn">view</v-btn>
                 </div>
               </template>
           </v-infinite-scroll>
@@ -87,6 +85,8 @@ import axios from 'axios'
             }
           });
 
+          console.log(response.data.recipes)
+
           if (response.data.recipes.length === 0) {
             done?.('empty')
             resultCount.value = "" + 0 + " Recipes Found"
@@ -96,7 +96,6 @@ import axios from 'axios'
           recipes.value = recipes.value.concat(response.data.recipes);
           hasMore.value = response.data.has_next;
           resultCount.value = "" + response.data.result_count + " Recipes Found"
-          console.log(response.data.result_count)
           currentPage.value++;
 
           if (!response.data.has_next) {
@@ -110,7 +109,6 @@ import axios from 'axios'
         } catch (error) {
           console.error('Error Loading Recipes:', error)
           done('error')
-        } finally {
         }
       }
 

@@ -1,4 +1,15 @@
 class RecipesController < ApplicationController
+  def show
+    @recipe = Recipe.find(params[:id])
+
+    render json: {
+      name: @recipe.name,
+      amounts: @recipe.amounts,
+      instructions: @recipe.instructions,
+      link: @recipe.link
+    }
+  end
+
   def search
     if params[:ingredients].size() == 0
       render json: {
@@ -19,7 +30,7 @@ class RecipesController < ApplicationController
     .page(page)
 
     render json: {
-      recipes: recipes.pluck(:name),
+      recipes: recipes.pluck(:id, :name),
       has_next: recipes.next_page.present?,
       result_count: recipes.total_count
     }

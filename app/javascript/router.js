@@ -1,9 +1,17 @@
-// Code from https://engineering.terakeet.com/posts/integrating-vite-and-vue-with-rails-7/
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from './components/Home.vue'
+import Recipe from './components/Recipe.vue'
 
 const routes = [
-  { path: '/', component: Home }
+  { path: '/',
+    name: 'Home',
+    component: Home
+  },
+  { path: '/recipe/:id',
+    name: 'Recipe',
+    component: Recipe,
+    props: true
+  }
 ]
 
 const router = createRouter({

@@ -4,61 +4,67 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   fixtures :all
 
   test "no strawberry butter for ham spinach mozzarella" do
-    get "/recipes/search", params: { ingredients: "ham,spinach,mozzarella cheese" }
-
-    assert_response :success
-    json_response = JSON.parse(response.body)
+    recipes = ingredientSearch("ham,spinach,mozzarella cheese")
 
     # return ham and spinach quiche
-    assert_includes json_response["recipes"], "Ham and Spinach Quiche"
-
+    assert_includes recipes, "Ham and Spinach Quiche"
     # don't return strawberry butter
-    assert_not_includes json_response["recipes"], "Strawberry Butter"
+    assert_not_includes recipes, "Strawberry Butter"
   end
 
   test "should not return recipe with fewer ingredients but all match" do
-    get "/recipes/search", params: { ingredients: "eggs,spinach,milk" }
-
-    assert_response :success
-    json_response = JSON.parse(response.body)
+    recipes = ingredientSearch("eggs,spinach,milk")
 
     # return ham and spinach quiche
-    assert_includes json_response["recipes"], "Ham and Spinach Quiche"
-
+    assert_includes recipes, "Ham and Spinach Quiche"
     # don't return omelette
-    assert_not_includes json_response["recipes"], "Omelette"
+    assert_not_includes recipes, "Omelette"
   end
 
   test "should return recipe with more ingredients and all match" do
-    get "/recipes/search", params: { ingredients: "eggs,vanilla" }
-
-    assert_response :success
-    json_response = JSON.parse(response.body)
+    recipes = ingredientSearch("eggs,vanilla")
 
     # return sugar cookies
-    assert_includes json_response["recipes"], "Sugar Cookies"
+    assert_includes recipes, "Sugar Cookies"
   end
 
   test "should not return recipe with fewer ingredients that dont match" do
-    get "/recipes/search", params: { ingredients: "flour,sugar,butter,vanilla" }
-
-    assert_response :success
-    json_response = JSON.parse(response.body)
+    recipes = ingredientSearch("flour,sugar,butter,vanilla")
 
     # return sugar cookies
-    assert_includes json_response["recipes"], "Sugar Cookies"
-
+    assert_includes recipes, "Sugar Cookies"
     # don't return omelette
-    assert_not_includes json_response["recipes"], "Omelette"
+    assert_not_includes recipes, "Omelette"
   end
 
   test "should not return recipe with more ingredients that don't match" do
-    get "/recipes/search", params: { ingredients: "butter,eggs" }
+    recipes = ingredientSearch("butter,eggs")
+
+    # don't return caprese salad
+    assert_not_includes recipes, "Caprese Salad"
+  end
+
+  test "show should return correct values" do
+    idNum = Recipe.where(name: "Chocolate Cake").pluck(:id)
+    get "/recipes/#{idNum[0]}"
 
     assert_response :success
     json_response = JSON.parse(response.body)
 
-    # don't return caprese salad
-    assert_not_includes json_response["recipes"], "Caprese Salad"
+    assert_equal json_response["name"], "Chocolate Cake"
+    assert_equal json_response["amounts"].strip, "2 cups flour\n1 cup sugar\n3 eggs\n1/2 cup butter\n1 cup milk".strip
+    assert_equal json_response["instructions"].strip, "1. Mix dry ingredients\n2. Add wet ingredients\n3. Bake at 350°F for 30 minutes".strip
+    assert_equal json_response["link"], "https://example.com/chocolate-cake"
+  end
+
+  private
+  def ingredientSearch(ingredients)
+    get "/recipes/search", params: { ingredients: ingredients }
+
+    assert_response :success
+    json_response = JSON.parse(response.body)
+
+    # get a list of recipe names
+    json_response["recipes"].map { |x| x[1] }
   end
 end
