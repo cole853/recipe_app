@@ -29,12 +29,12 @@
 
           <!-- Search button and result number display-->
           <div class="d-flex align-center justify-space-between">
-          <v-btn @click="freshSearch" class="custom-btn" color="#5EC7A1">Search</v-btn>
+          <v-btn @click="freshSearch" class="custom-btn">Search</v-btn>
           <v-card variant="default" :text="resultCount" style="font-size: 25px"/>
           </div>
 
           <!-- Results -->
-          <v-infinite-scroll ref="infiniteScrollRef" :height="300" @load="load" class="mt-3 rounded-lg" color="#5EC7A1" :style="{backgroundColor: '#536c77'}">
+          <v-infinite-scroll ref="infiniteScrollRef" :height="300" @load="load" class="mt-3 rounded-lg" color="#5EC7A1" :style="{ backgroundColor: '#536c77', border: '2px solid #b43e69' }">
               <template v-for="(recipe, index) in recipes" :key="recipe">
                 <div :style="{backgroundColor: index % 2 === 0 ? '#5EC7A1' : 'white'}" class="pa-2 d-flex align-center justify-space-between">
                   {{ recipe[1] }}
@@ -62,6 +62,7 @@ import axios from 'axios'
       const resultCount = ref('-- Recipes Found')
       const infiniteScrollRef = ref(null)
 
+      // resets values from previous search then calls the load function
       async function freshSearch() {
         recipes.value = []
         currentPage.value = 1
@@ -72,6 +73,8 @@ import axios from 'axios'
         await load
       }
       
+      // load function for the infinite scroll component
+      // loads the next page of recipes
       async function load ({ done } = {}) {
         if (ingredients.value.length === 0 || !hasMore) {
           done?.('empty')
@@ -84,8 +87,6 @@ import axios from 'axios'
               page: currentPage.value
             }
           });
-
-          console.log(response.data.recipes)
 
           if (response.data.recipes.length === 0) {
             done?.('empty')
@@ -129,6 +130,7 @@ import axios from 'axios'
 .custom-btn {
   background-color: #b43e69 !important;
   color: black !important;
+  border-radius: 24px !important;
 }
 .custom-infinite-scroll {
   background-color: "#5EC7A1" !important;
