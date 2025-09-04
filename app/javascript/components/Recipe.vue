@@ -3,11 +3,11 @@
 
     <!-- App bar -->
     <v-app-bar app color="#5EC7A1">
-      <v-btn :to="'/'" class="custom-btn ml-2">back</v-btn>
+      <v-btn :to="'/'" class="custom-btn ml-2" style="position: absolute; left: 16px;">back</v-btn>
       <v-app-bar-title class="text-center">
         {{ name }}
       </v-app-bar-title>
-      <div>
+      <div style="position: absolute; right: 16px;">
         <v-btn class="custom-btn mr-2">edit</v-btn>
         <v-btn class="custom-btn mr-2">delete</v-btn>
       </div>
@@ -67,7 +67,7 @@ export default {
         const response = await axios.get('/recipes/' + props.id);
         name.value = response.data.name
         amounts.value = response.data.amounts
-        instructions.value = response.data.instructions
+        instructions.value = response.data.instructions.replace("\\u00b0", "\u00b0")
         link.value = response.data.link
         console.log(amounts.value)
 

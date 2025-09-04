@@ -6,7 +6,8 @@
       <v-app-bar-title class="text-center">
         Recipe Search
       </v-app-bar-title>
-      <v-btn class="custom-btn mr-8">Add Recipe</v-btn>
+      
+      <v-btn class="custom-btn" style="position: absolute; right: 16px;">Add Recipe</v-btn>
     </v-app-bar>
 
     <!-- main body -->
@@ -34,7 +35,7 @@
           </div>
 
           <!-- Results -->
-          <v-infinite-scroll ref="infiniteScrollRef" :height="300" @load="load" class="mt-3 rounded-lg" color="#5EC7A1" :style="{ backgroundColor: '#536c77', border: '2px solid #b43e69' }">
+          <v-infinite-scroll ref="infiniteScrollRef" :height="300" @load="loadRecipes" class="mt-3 rounded-lg" color="#5EC7A1" :style="{ backgroundColor: '#536c77', border: '2px solid #b43e69' }">
               <template v-for="(recipe, index) in recipes" :key="recipe">
                 <div :style="{backgroundColor: index % 2 === 0 ? '#5EC7A1' : 'white'}" class="pa-2 d-flex align-center justify-space-between">
                   {{ recipe[1] }}
@@ -50,7 +51,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 
   export default {
@@ -62,20 +63,22 @@ import axios from 'axios'
       const resultCount = ref('-- Recipes Found')
       const infiniteScrollRef = ref(null)
 
-      // resets values from previous search then calls the load function
+      // resets values from previous search then calls the loadRecipes function
       async function freshSearch() {
         recipes.value = []
         currentPage.value = 1
         hasMore.value = true
 
-        infiniteScrollRef.value.reset()
+        if (infiniteScrollRef.value) {
+          infiniteScrollRef.value.reset()
+        }
 
-        await load
+        await loadRecipes()
       }
       
       // load function for the infinite scroll component
       // loads the next page of recipes
-      async function load ({ done } = {}) {
+      async function loadRecipes ({ done } = {}) {
         if (ingredients.value.length === 0 || !hasMore) {
           done?.('empty')
           return
@@ -90,13 +93,14 @@ import axios from 'axios'
 
           if (response.data.recipes.length === 0) {
             done?.('empty')
-            resultCount.value = "" + 0 + " Recipes Found"
+            resultCount.value = "0 Recipes Found"
             return
           }
 
+          const nFormat = new Intl.NumberFormat(undefined);
           recipes.value = recipes.value.concat(response.data.recipes);
           hasMore.value = response.data.has_next;
-          resultCount.value = "" + response.data.result_count + " Recipes Found"
+          resultCount.value = `${nFormat.format(response.data.result_count)} Recipes Found`
           currentPage.value++;
 
           if (!response.data.has_next) {
@@ -113,12 +117,39 @@ import axios from 'axios'
         }
       }
 
+      async function saveState() {
+        localStorage.setItem('searchState', JSON.stringify({
+          recipes: recipes.value,
+          ingredients: ingredients.value,
+          resultCount: resultCount.value,
+          hasMore: hasMore.value,
+          currentPage: currentPage.value,
+          infiniteScrollPos: infiniteScrollRef.value.$el.scrollTop
+        }))
+      }
+
+      async function loadState() {
+        const saved = localStorage.getItem('searchState')
+        if(saved) {
+          const state = JSON.parse(saved)
+          recipes.value = state.recipes
+          ingredients.value = state.ingredients
+          resultCount.value = state.resultCount
+          hasMore.value = state.hasMore
+          currentPage.value = state.currentPage
+          infiniteScrollRef.value.$el.scrollTop = state.infiniteScrollPos
+        }
+      }
+
+      onMounted(loadState)
+      onBeforeUnmount(saveState)
+
       return {
         recipes,
         ingredients,
         resultCount,
         infiniteScrollRef,
-        load,
+        loadRecipes,
         freshSearch
       }
     }
