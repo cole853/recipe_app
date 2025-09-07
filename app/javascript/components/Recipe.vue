@@ -1,6 +1,14 @@
 <template>
   <v-app style="background-color: #455A64">
 
+    <!-- loading overlay -->
+    <v-overlay :model-value="isLoading" class="align-center justify-center">
+    <v-card class="pa-4 text-center">
+      <v-progress-circular indeterminate size="64"/>
+      <div class="mt-4">Loading recipe...</div>
+    </v-card>
+    </v-overlay>
+
     <!-- App bar -->
     <v-app-bar app color="#5EC7A1">
       <v-btn :to="'/'" class="custom-btn ml-2" style="position: absolute; left: 16px;">back</v-btn>
@@ -9,9 +17,21 @@
       </v-app-bar-title>
       <div style="position: absolute; right: 16px;">
         <v-btn class="custom-btn mr-2">edit</v-btn>
-        <v-btn class="custom-btn mr-2">delete</v-btn>
+        <v-btn @click="delDialog = true" class="custom-btn mr-2">delete</v-btn>
       </div>
     </v-app-bar>
+
+    <!-- delete dialog -->
+    <div class="text-center pa-4">
+    <v-dialog v-model="delDialog" width="auto">
+      <v-card class="text-black" color="#455A64" max-width="400">
+        <v-card-title>Are you sure?</v-card-title>
+        <v-card-text>{{ name }} will be removed along with ingredients that are no longer used.</v-card-text>
+        <v-btn color="#5EC7A1" @click="delDialog = false" text="Cancel"/>
+        <v-btn @click="deleteRecipe" class="text-black" color="#b43e69" text="Delete"/>
+      </v-card>
+    </v-dialog>
+    </div>
   
     <!-- main body -->
     <v-main>
@@ -49,6 +69,7 @@
 <script>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
 
 export default {
   props: {
@@ -60,19 +81,47 @@ export default {
     const amounts = ref('')
     const instructions = ref('')
     const link = ref('')
+    const isLoading = ref(true)
+    const delDialog = ref(false)
+
+    const router = useRouter()
 
     // gets the recipe information and sets values
     async function getRecipe() {
       try {
-        const response = await axios.get('/recipes/' + props.id);
+        isLoading.value = true
+        const response = await axios.get('/recipes/' + props.id)
         name.value = response.data.name
         amounts.value = response.data.amounts
         instructions.value = response.data.instructions.replace("\\u00b0", "\u00b0")
         link.value = response.data.link
-        console.log(amounts.value)
+        isLoading.value = false
 
       } catch (error) {
-        console.error('Error Showing Recipe:', error)
+        console.error('Error Showing Recipe: ', error)
+      }
+    }
+
+    async function deleteRecipe() {
+      try {
+        router.push({
+          path: '/',
+          query: {
+            deleted: true, 
+            created: false,
+            edited: false,
+            Id: props.id
+          }
+        })
+
+        const response = await axios.delete('/recipes/' + props.id, {
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          }
+        })
+      }
+      catch (error) {
+        console.error('Error Deleting Recipe: ', error)
       }
     }
 
@@ -83,7 +132,10 @@ export default {
       name,
       amounts,
       instructions,
-      link
+      link,
+      isLoading,
+      delDialog,
+      deleteRecipe
     }
   }
 }

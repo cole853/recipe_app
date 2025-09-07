@@ -31,7 +31,7 @@
           <!-- Search button and result number display-->
           <div class="d-flex align-center justify-space-between">
           <v-btn @click="freshSearch" class="custom-btn">Search</v-btn>
-          <v-card variant="default" :text="resultCount" style="font-size: 25px"/>
+          <v-card variant="default" :text="resultCountMessage" style="font-size: 25px"/>
           </div>
 
           <!-- Results -->
@@ -53,6 +53,7 @@
 <script>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
+import { useRoute } from 'vue-router'
 
   export default {
     setup() {
@@ -60,20 +61,24 @@ import axios from 'axios'
       const currentPage = ref(1)
       const hasMore = ref(true)
       const ingredients = ref('')
-      const resultCount = ref('-- Recipes Found')
+      const resultCountMessage = ref('-- Recipes Found')
+      const resultCount = ref(0)
       const infiniteScrollRef = ref(null)
 
-      // resets values from previous search then calls the loadRecipes function
+      const nFormat = new Intl.NumberFormat(undefined);
+
+      const router = useRoute()
+
+      // resets values from previous search
       async function freshSearch() {
         recipes.value = []
         currentPage.value = 1
         hasMore.value = true
+        resultCountMessage.value = '-- Recipes Found'
 
         if (infiniteScrollRef.value) {
           infiniteScrollRef.value.reset()
         }
-
-        await loadRecipes()
       }
       
       // load function for the infinite scroll component
@@ -91,16 +96,10 @@ import axios from 'axios'
             }
           });
 
-          if (response.data.recipes.length === 0) {
-            done?.('empty')
-            resultCount.value = "0 Recipes Found"
-            return
-          }
-
-          const nFormat = new Intl.NumberFormat(undefined);
           recipes.value = recipes.value.concat(response.data.recipes);
           hasMore.value = response.data.has_next;
-          resultCount.value = `${nFormat.format(response.data.result_count)} Recipes Found`
+          resultCount.value = response.data.result_count
+          resultCountMessage.value = `${nFormat.format(resultCount.value)} Recipes Found`
           currentPage.value++;
 
           if (!response.data.has_next) {
@@ -112,22 +111,25 @@ import axios from 'axios'
           }
 
         } catch (error) {
-          console.error('Error Loading Recipes:', error)
+          console.error('Error Loading Recipes: ', error)
           done('error')
         }
       }
 
+      // save the state of the search
       async function saveState() {
         localStorage.setItem('searchState', JSON.stringify({
           recipes: recipes.value,
           ingredients: ingredients.value,
           resultCount: resultCount.value,
+          resultCountMessage: resultCountMessage.value,
           hasMore: hasMore.value,
           currentPage: currentPage.value,
           infiniteScrollPos: infiniteScrollRef.value.$el.scrollTop
         }))
       }
 
+      // load the state of the search from a previous save
       async function loadState() {
         const saved = localStorage.getItem('searchState')
         if(saved) {
@@ -135,9 +137,25 @@ import axios from 'axios'
           recipes.value = state.recipes
           ingredients.value = state.ingredients
           resultCount.value = state.resultCount
+          resultCountMessage.value = state.resultCountMessage
           hasMore.value = state.hasMore
           currentPage.value = state.currentPage
           infiniteScrollRef.value.$el.scrollTop = state.infiniteScrollPos
+
+          if (!router) {
+            console.log("NO ROUTER")
+          }
+
+          if (!router.query) {
+            console.log("NO ROUTER.QUERY")
+          }
+
+          // update the home component when an item is deleted
+          if (router && router.query && router.query.deleted) {
+            recipes.value = recipes.value.filter(recipe => recipe[0] != router.query.Id)
+            resultCount.value -= 1
+            resultCountMessage.value = `${nFormat.format(resultCount.value)} Recipes Found`
+          }
         }
       }
 
@@ -147,7 +165,7 @@ import axios from 'axios'
       return {
         recipes,
         ingredients,
-        resultCount,
+        resultCountMessage,
         infiniteScrollRef,
         loadRecipes,
         freshSearch

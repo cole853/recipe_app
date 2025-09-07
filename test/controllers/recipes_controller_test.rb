@@ -51,10 +51,28 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json_response = JSON.parse(response.body)
 
+    # make sure ingredient information is right
     assert_equal json_response["name"], "Chocolate Cake"
     assert_equal json_response["amounts"].strip, "2 cups flour\n1 cup sugar\n3 eggs\n1/2 cup butter\n1 cup milk".strip
     assert_equal json_response["instructions"].strip, "1. Mix dry ingredients\n2. Add wet ingredients\n3. Bake at 350°F for 30 minutes".strip
     assert_equal json_response["link"], "https://example.com/chocolate-cake"
+  end
+
+  test "destroy should remove recipe and unused ingredients" do
+    idNum = Recipe.where(name: "Caprese Salad").pluck(:id)
+    delete "/recipes/#{idNum[0]}"
+
+    recipe_names = Recipe.all.pluck(:name)
+    ingredient_names = Ingredient.all.pluck(:name)
+
+    # make sure recipe and unused ingredients are gone
+    assert_not_includes recipe_names, "Caprese Salad"
+    assert_not_includes ingredient_names, "tomato"
+    assert_not_includes ingredient_names, "basil"
+    assert_not_includes ingredient_names, "olive oil"
+
+    # make sure used ingredient in recipe was not deleted
+    assert_includes ingredient_names, "mozzarella cheese"
   end
 
   private
