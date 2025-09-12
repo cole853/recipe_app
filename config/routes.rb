@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   get "/recipes/search", to: "recipes#search"
-  resources :recipes, except: [ "index", "edit" ]
+  resources :recipes, except: [ "index", "edit", "new" ]
   get "home/index"
   root "home#index"
 

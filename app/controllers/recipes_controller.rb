@@ -40,17 +40,29 @@ class RecipesController < ApplicationController
     }
   end
 
-  def new
-  end
-
+  # create a new recipe
   def create
+    ActiveRecord::Base.transaction do
+      permittedParams = recipe_params
+      @recipe = Recipe.new(permittedParams.except(:ingredients))
+
+      if ingredient_check && @recipe.save
+        @recipe.update_ingredients = permittedParams[:ingredients]
+        render json: @recipe, status: :created
+      else
+        render json: { errors: @recipe.errors.full_messages }, status: :unprocessable_content
+        raise ActiveRecord::Rollback
+      end
+    end
   end
 
+  # update the recipe
   def update
     ActiveRecord::Base.transaction do
       ingredient_ids = @recipe.ingredients.pluck(:id)
-      if ingredient_check & @recipe.update(name: params[:name].strip, instructions: params[:instructions].strip, amounts: params[:amounts].strip, link: params[:link].strip)
-        @recipe.update_ingredients = params[:ingredients]
+      permittedParams = recipe_params
+      if ingredient_check && @recipe.update(permittedParams.except(:ingredients))
+        @recipe.update_ingredients = permittedParams[:ingredients]
         remove_unused_ingreds(ingredient_ids)
         render json: @recipe, status: :ok
       else
@@ -74,6 +86,18 @@ class RecipesController < ApplicationController
     @recipe = Recipe.find(params[:id])
   end
 
+  def recipe_params
+    params.permit(:name, :instructions, :amounts, :link, ingredients: [])
+
+    {
+      name: params[:name].strip,
+      instructions: params[:instructions].strip,
+      amounts: params[:amounts].strip,
+      link: params[:link].strip,
+      ingredients: params[:ingredients]
+    }
+  end
+
   # make sure ingredients are valid
   def ingredient_check
     if !params[:ingredients].is_a?(Array) || params[:ingredients].empty?
@@ -89,6 +113,7 @@ class RecipesController < ApplicationController
     false
   end
 
+  # remove ingredients that are no longer used after delete or update
   def remove_unused_ingreds(ingredient_ids)
     ingreds = Ingredient
       .where(id: ingredient_ids)

@@ -79,7 +79,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
   ######################################################## UPDATE TESTS ########################################################
   test "update should change values" do
-    updateTest({}, {
+    update_test({}, {
       name: "testName",
       amounts: "1 pound dry noodles\n4 quarts water",
       instructions: "bring water to a boil\nadd noodles to boiling water",
@@ -94,7 +94,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "strings should be stripped" do
-    updateTest({ name: "  testName  " }, {
+    update_test({ name: "  testName  " }, {
       name: "testName",
       amounts: "1 pound dry noodles\n4 quarts water",
       instructions: "bring water to a boil\nadd noodles to boiling water",
@@ -109,7 +109,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update with empty link should work" do
-    updateTest({ link: "" }, {
+    update_test({ link: "" }, {
       name: "testName",
       amounts: "1 pound dry noodles\n4 quarts water",
       instructions: "bring water to a boil\nadd noodles to boiling water",
@@ -120,33 +120,58 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "empty name should not update" do
-    updateTest({ name: "  " }, {})
+    update_test({ name: "  " }, {})
   end
 
   test "empty instructions should not update" do
-    updateTest({ instructions: " " }, {})
+    update_test({ instructions: " " }, {})
   end
 
   test "empty amounts should not update" do
-    updateTest({ amounts: "" }, {})
+    update_test({ amounts: "" }, {})
   end
 
   test "ingredients string should not update" do
-    updateTest({ ingredients: "ingreda, ingredb, ingredc" }, {})
+    update_test({ ingredients: "ingreda, ingredb, ingredc" }, {})
   end
 
   test "empty ingredients should not update" do
-    updateTest({ ingredients: [ " " ] }, {})
+    update_test({ ingredients: [ " " ] }, {})
   end
 
   test "empty ingredients should be ignored" do
-    updateTest({ ingredients: [ " ", "eggs", "beets" ] }, {
+    update_test({ ingredients: [ " ", "eggs", "beets" ] }, {
       name: "testName",
       amounts: "1 pound dry noodles\n4 quarts water",
       instructions: "bring water to a boil\nadd noodles to boiling water",
       link: "testLink",
       ingredients: [ "eggs", "beets" ]
     }, true)
+  end
+
+  ######################################################## CREATE TESTS ########################################################
+  test "create should have correct values" do
+    create_test({}, true)
+  end
+
+  test "create with empty link should work" do
+    create_test({ link: "" }, true)
+  end
+
+  test "create with empty name should not work" do
+    create_test({ name: "  " })
+  end
+
+  test "create with empty instructions should not work" do
+    create_test({ instructions: "" })
+  end
+
+  test "create with empty amounts should not work" do
+    create_test({ amounts: "" })
+  end
+
+  test "create with empty ingredients should not work" do
+    create_test({ ingredients: [ " " ] })
   end
 
   ######################################################## PRIVATE FUNCTIONS ########################################################
@@ -176,8 +201,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected[:ingredients], json_response["ingredients"]
   end
 
-  def updateTest(input, output, shouldWork = false)
-    # change default chnges according to input
+  def update_test(input, output, shouldWork = false)
+    # change default changes according to input
     changes = update_hash({
       name: "testName",
       ingredients: [ "ingreda", "ingredb", "ingredc" ],
@@ -210,6 +235,32 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     # check that recipe values are as expected
     showTest(idNum, expected)
+  end
+
+  def create_test(input, shouldWork = false)
+    # change default newRecipe according to input
+    newRecipe = update_hash({
+      name: "testName",
+      ingredients: [ "ingreda", "ingredb", "ingredc" ],
+      instructions: "bring water to a boil\nadd noodles to boiling water",
+      amounts: "1 pound dry noodles\n4 quarts water",
+      link: "testLink"
+    },
+    input)
+
+    # create new recipe
+    post "/recipes/", params: newRecipe
+
+    # check that the response was right
+    if shouldWork
+      assert_response :created
+
+      # check that recipe values are as expected
+      idNum = Recipe.where(name: "testName").pluck(:id)
+      showTest(idNum, newRecipe)
+    else
+      assert_response :unprocessable_content
+    end
   end
 
   # update the matching keys of an old hash to new values
