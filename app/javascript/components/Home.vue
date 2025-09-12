@@ -21,8 +21,7 @@
             variant="solo-filled"
             color="#5EC7A1"
             backgroundColor="white"
-            label="enter ingredients separated by a comma"
-            class="ingredient_input"
+            label="Enter ingredients separated by a comma"
             v-model="ingredients" 
             placeholder="apples, oranges, grapes, . . ." 
             @keyup.enter="freshSearch"
@@ -141,14 +140,6 @@ import { useRoute } from 'vue-router'
           hasMore.value = state.hasMore
           currentPage.value = state.currentPage
           infiniteScrollRef.value.$el.scrollTop = state.infiniteScrollPos
-
-          if (!router) {
-            console.log("NO ROUTER")
-          }
-
-          if (!router.query) {
-            console.log("NO ROUTER.QUERY")
-          }
 
           // update the home component when an item is deleted
           if (router && router.query && router.query.deleted) {

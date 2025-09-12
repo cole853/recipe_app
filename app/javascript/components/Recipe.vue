@@ -16,21 +16,36 @@
         {{ name }}
       </v-app-bar-title>
       <div style="position: absolute; right: 16px;">
-        <v-btn class="custom-btn mr-2">edit</v-btn>
+        <v-btn @click="editDialog = true" class="custom-btn mr-2">edit</v-btn>
         <v-btn @click="delDialog = true" class="custom-btn mr-2">delete</v-btn>
       </div>
     </v-app-bar>
 
     <!-- delete dialog -->
     <div class="text-center pa-4">
-    <v-dialog v-model="delDialog" width="auto">
-      <v-card class="text-black" color="#455A64" max-width="400">
-        <v-card-title>Are you sure?</v-card-title>
-        <v-card-text>{{ name }} will be removed along with ingredients that are no longer used.</v-card-text>
-        <v-btn color="#5EC7A1" @click="delDialog = false" text="Cancel"/>
-        <v-btn @click="deleteRecipe" class="text-black" color="#b43e69" text="Delete"/>
-      </v-card>
-    </v-dialog>
+      <v-dialog v-model="delDialog" width="auto">
+        <v-card class="text-black" color="#455A64" max-width="400">
+          <v-card-title>Are you sure?</v-card-title>
+          <v-card-text>{{ name }} will be removed along with ingredients that are no longer used.</v-card-text>
+          <v-btn color="#5EC7A1" @click="delDialog = false" text="Cancel"/>
+          <v-btn @click="deleteRecipe" class="text-black" color="#b43e69" text="Delete"/>
+        </v-card>
+      </v-dialog>
+    </div>
+
+    <!-- edit dialog -->
+    <div class="text-center pa-4">
+      <v-dialog v-model="editDialog" width="auto">
+        <RecipeEdit
+        :recipe-name="name"
+        :instructions="instructions"
+        :amounts="amounts"
+        :link="link"
+        :ingredients="ingredients"
+        @cancel="editDialog = false"
+        @save="editRecipe"
+        />
+      </v-dialog>
     </div>
   
     <!-- main body -->
@@ -70,19 +85,25 @@
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import RecipeEdit from './RecipeEdit.vue'
 
 export default {
   props: {
     id: String,
     required: true
   },
+  components: {
+    RecipeEdit
+  },
   setup (props) {
     const name = ref('')
     const amounts = ref('')
     const instructions = ref('')
     const link = ref('')
+    const ingredients = ref('')
     const isLoading = ref(true)
     const delDialog = ref(false)
+    const editDialog = ref(false)
 
     const router = useRouter()
 
@@ -95,6 +116,7 @@ export default {
         amounts.value = response.data.amounts
         instructions.value = response.data.instructions.replace("\\u00b0", "\u00b0")
         link.value = response.data.link
+        ingredients.value = response.data.ingredients.toString().replace(/,/g, "\n")
         isLoading.value = false
 
       } catch (error) {
@@ -102,14 +124,13 @@ export default {
       }
     }
 
+    // delete the recipe
     async function deleteRecipe() {
       try {
         router.push({
           path: '/',
           query: {
-            deleted: true, 
-            created: false,
-            edited: false,
+            deleted: true,
             Id: props.id
           }
         })
@@ -125,6 +146,33 @@ export default {
       }
     }
 
+    // edit the recipe
+    async function editRecipe(recipeData) {
+      editDialog.value = false
+      isLoading.value = true
+
+      const ingreds = recipeData.ingredients.split("\n").map(x => x.trim()).filter(x => x !== "")
+
+      try {
+        const response = await axios.patch('/recipes/' + props.id, {
+          name: recipeData.name,
+          amounts: recipeData.amounts,
+          instructions: recipeData.instructions,
+          link: recipeData.link,
+          ingredients: ingreds
+        }, {
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          }
+        })
+
+        getRecipe()
+      }
+      catch (error) {
+        console.error('Error Updating Recipe: ', error)
+      }
+    }
+
     onMounted(getRecipe)
     watch(() => props.id, getRecipe)
 
@@ -133,9 +181,12 @@ export default {
       amounts,
       instructions,
       link,
+      ingredients,
       isLoading,
       delDialog,
-      deleteRecipe
+      editDialog,
+      deleteRecipe,
+      editRecipe
     }
   }
 }

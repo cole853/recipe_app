@@ -3,6 +3,7 @@ require "test_helper"
 class RecipesControllerTest < ActionDispatch::IntegrationTest
   fixtures :all
 
+  ######################################################## SEARCH TESTS ########################################################
   test "no strawberry butter for ham spinach mozzarella" do
     recipes = ingredientSearch("ham,spinach,mozzarella cheese")
 
@@ -44,20 +45,21 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes recipes, "Caprese Salad"
   end
 
+  ######################################################## SHOW TEST ########################################################
   test "show should return correct values" do
     idNum = Recipe.where(name: "Chocolate Cake").pluck(:id)
-    get "/recipes/#{idNum[0]}"
 
-    assert_response :success
-    json_response = JSON.parse(response.body)
-
-    # make sure ingredient information is right
-    assert_equal json_response["name"], "Chocolate Cake"
-    assert_equal json_response["amounts"].strip, "2 cups flour\n1 cup sugar\n3 eggs\n1/2 cup butter\n1 cup milk".strip
-    assert_equal json_response["instructions"].strip, "1. Mix dry ingredients\n2. Add wet ingredients\n3. Bake at 350°F for 30 minutes".strip
-    assert_equal json_response["link"], "https://example.com/chocolate-cake"
+    # make sure values are correct
+    showTest(idNum, {
+      name: "Chocolate Cake",
+      amounts: "2 cups flour\n1 cup sugar\n3 eggs\n1/2 cup butter\n1 cup milk",
+      instructions: "1. Mix dry ingredients\n2. Add wet ingredients\n3. Bake at 350°F for 30 minutes",
+      link: "https://example.com/chocolate-cake",
+      ingredients: [ "sugar", "eggs", "milk", "butter", "flour" ]
+    })
   end
 
+  ######################################################## DESTROY TEST ########################################################
   test "destroy should remove recipe and unused ingredients" do
     idNum = Recipe.where(name: "Caprese Salad").pluck(:id)
     delete "/recipes/#{idNum[0]}"
@@ -75,6 +77,79 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_includes ingredient_names, "mozzarella cheese"
   end
 
+  ######################################################## UPDATE TESTS ########################################################
+  test "update should change values" do
+    updateTest({}, {
+      name: "testName",
+      amounts: "1 pound dry noodles\n4 quarts water",
+      instructions: "bring water to a boil\nadd noodles to boiling water",
+      link: "testLink",
+      ingredients: [ "ingreda", "ingredb", "ingredc" ]
+    },
+    true)
+
+    # make sure unused vanilla ingredient is deleted
+    ingredient_names = Ingredient.all.pluck(:name)
+    assert_not_includes ingredient_names, "vanilla"
+  end
+
+  test "strings should be stripped" do
+    updateTest({ name: "  testName  " }, {
+      name: "testName",
+      amounts: "1 pound dry noodles\n4 quarts water",
+      instructions: "bring water to a boil\nadd noodles to boiling water",
+      link: "testLink",
+      ingredients: [ "ingreda", "ingredb", "ingredc" ]
+    },
+    true)
+
+    # make sure unused vanilla ingredient is deleted
+    ingredient_names = Ingredient.all.pluck(:name)
+    assert_not_includes ingredient_names, "vanilla"
+  end
+
+  test "update with empty link should work" do
+    updateTest({ link: "" }, {
+      name: "testName",
+      amounts: "1 pound dry noodles\n4 quarts water",
+      instructions: "bring water to a boil\nadd noodles to boiling water",
+      link: "",
+      ingredients: [ "ingreda", "ingredb", "ingredc" ]
+    },
+    true)
+  end
+
+  test "empty name should not update" do
+    updateTest({ name: "  " }, {})
+  end
+
+  test "empty instructions should not update" do
+    updateTest({ instructions: " " }, {})
+  end
+
+  test "empty amounts should not update" do
+    updateTest({ amounts: "" }, {})
+  end
+
+  test "ingredients string should not update" do
+    updateTest({ ingredients: "ingreda, ingredb, ingredc" }, {})
+  end
+
+  test "empty ingredients should not update" do
+    updateTest({ ingredients: [ " " ] }, {})
+  end
+
+  test "empty ingredients should be ignored" do
+    updateTest({ ingredients: [ " ", "eggs", "beets" ] }, {
+      name: "testName",
+      amounts: "1 pound dry noodles\n4 quarts water",
+      instructions: "bring water to a boil\nadd noodles to boiling water",
+      link: "testLink",
+      ingredients: [ "eggs", "beets" ]
+    }, true)
+  end
+
+  ######################################################## PRIVATE FUNCTIONS ########################################################
   private
   def ingredientSearch(ingredients)
     get "/recipes/search", params: { ingredients: ingredients }
@@ -84,5 +159,62 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     # get a list of recipe names
     json_response["recipes"].map { |x| x[1] }
+  end
+
+  def showTest(idNum, expected)
+    # get the recipe to check values
+    get "/recipes/#{idNum[0]}"
+
+    assert_response :success
+    json_response = JSON.parse(response.body)
+
+    # make sure ingredient information is right
+    assert_equal expected[:name], json_response["name"]
+    assert_equal expected[:amounts].strip, json_response["amounts"].strip
+    assert_equal expected[:instructions].strip, json_response["instructions"].strip
+    assert_equal expected[:link], json_response["link"]
+    assert_equal expected[:ingredients], json_response["ingredients"]
+  end
+
+  def updateTest(input, output, shouldWork = false)
+    # change default chnges according to input
+    changes = update_hash({
+      name: "testName",
+      ingredients: [ "ingreda", "ingredb", "ingredc" ],
+      instructions: "bring water to a boil\nadd noodles to boiling water",
+      amounts: "1 pound dry noodles\n4 quarts water",
+      link: "testLink"
+    },
+    input)
+
+    # change default expected according to output
+    expected = update_hash({
+      name: "Sugar Cookies",
+      amounts: "2 1/2 cups flour\n1 cup sugar\n1 cup butter\n2 eggs\n1 tsp vanilla",
+      instructions: "1. Cream butter and sugar\n2. Add eggs and vanilla\n3. Mix in flour\n4. Bake at 375°F for 8-10 minutes",
+      link: "https://example.com/sugar-cookies",
+      ingredients: [ "butter", "flour", "eggs", "sugar", "vanilla" ]
+    },
+    output)
+
+    # try to change the recipe
+    idNum = Recipe.where(name: "Sugar Cookies").pluck(:id)
+    patch "/recipes/#{idNum[0]}", params: changes
+
+    # make sure the proper result was returned
+    if shouldWork
+      assert_response :success
+    else
+      assert_response :unprocessable_content
+    end
+
+    # check that recipe values are as expected
+    showTest(idNum, expected)
+  end
+
+  # update the matching keys of an old hash to new values
+  def update_hash(old, new)
+    shared_keys = old.keys & new.keys
+    old.merge(new.slice(*shared_keys))
   end
 end

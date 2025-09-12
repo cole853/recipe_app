@@ -1,5 +1,5 @@
 class RecipesController < ApplicationController
-  before_action :set_recipe, only: %i[ show destroy ]
+  before_action :set_recipe, only: %i[ show destroy update]
 
   # return a page of ids and names for recipes that include all of the ingredients in params
   # also returns the number of results for the search and whether there is another page to load
@@ -35,7 +35,8 @@ class RecipesController < ApplicationController
       name: @recipe.name,
       amounts: @recipe.amounts,
       instructions: @recipe.instructions,
-      link: @recipe.link
+      link: @recipe.link,
+      ingredients: @recipe.ingredients.pluck(:name)
     }
   end
 
@@ -45,10 +46,18 @@ class RecipesController < ApplicationController
   def create
   end
 
-  def edit
-  end
-
   def update
+    ActiveRecord::Base.transaction do
+      ingredient_ids = @recipe.ingredients.pluck(:id)
+      if ingredient_check & @recipe.update(name: params[:name].strip, instructions: params[:instructions].strip, amounts: params[:amounts].strip, link: params[:link].strip)
+        @recipe.update_ingredients = params[:ingredients]
+        remove_unused_ingreds(ingredient_ids)
+        render json: @recipe, status: :ok
+      else
+        render json: { errors: @recipe.errors.full_messages }, status: :unprocessable_content
+        raise ActiveRecord::Rollback
+      end
+    end
   end
 
   # delete a recipe and any of its ingredients that are no longer used in a recipe
@@ -56,19 +65,37 @@ class RecipesController < ApplicationController
     ActiveRecord::Base.transaction do
       ingredient_ids = @recipe.ingredients.pluck(:id)
       @recipe.destroy
-
-      ingreds = Ingredient
-      .where(id: ingredient_ids)
-      .left_joins(:recipes)
-      .group("ingredients.id")
-      .having("COUNT(recipes.id) = 0")
-
-      ingreds.destroy_all
+      remove_unused_ingreds(ingredient_ids)
     end
   end
 
   private
   def set_recipe
     @recipe = Recipe.find(params[:id])
+  end
+
+  # make sure ingredients are valid
+  def ingredient_check
+    if !params[:ingredients].is_a?(Array) || params[:ingredients].empty?
+      return false
+    end
+
+    for ingred in params[:ingredients]
+      if !ingred.blank?
+        return true
+      end
+    end
+
+    false
+  end
+
+  def remove_unused_ingreds(ingredient_ids)
+    ingreds = Ingredient
+      .where(id: ingredient_ids)
+      .left_joins(:recipes)
+      .group("ingredients.id")
+      .having("COUNT(recipes.id) = 0")
+
+      ingreds.destroy_all
   end
 end
