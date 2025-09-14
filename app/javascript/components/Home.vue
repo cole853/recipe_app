@@ -7,7 +7,7 @@
         Recipe Search
       </v-app-bar-title>
       
-      <v-btn class="custom-btn" style="position: absolute; right: 16px;">Add Recipe</v-btn>
+      <v-btn to="/create" class="custom-btn" style="position: absolute; right: 16px;">Add Recipe</v-btn>
     </v-app-bar>
 
     <!-- main body -->
@@ -34,7 +34,7 @@
           </div>
 
           <!-- Results -->
-          <v-infinite-scroll ref="infiniteScrollRef" :height="300" @load="loadRecipes" class="mt-3 rounded-lg" color="#5EC7A1" :style="{ backgroundColor: '#536c77', border: '2px solid #b43e69' }">
+          <v-infinite-scroll ref="infiniteScrollRef" :height="600" @load="loadRecipes" class="mt-3 rounded-lg" color="#5EC7A1" :style="{ backgroundColor: '#536c77', border: '2px solid #b43e69' }">
               <template v-for="(recipe, index) in recipes" :key="recipe">
                 <div :style="{backgroundColor: index % 2 === 0 ? '#5EC7A1' : 'white'}" class="pa-2 d-flex align-center justify-space-between">
                   {{ recipe[1] }}

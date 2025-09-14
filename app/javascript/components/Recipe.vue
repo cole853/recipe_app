@@ -1,12 +1,27 @@
 <template>
   <v-app style="background-color: #455A64">
 
+    <!-- unsuccessful save snackbar -->
+    <v-snackbar v-model="snackbar" :timeout= "sbtimeout">
+      {{ sbText }}
+
+      <template v-slot:actions>
+        <v-btn
+          color="#b43e69"
+          variant="text"
+          @click="snackbar = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
+
     <!-- loading overlay -->
-    <v-overlay :model-value="isLoading" class="align-center justify-center">
-    <v-card class="pa-4 text-center">
-      <v-progress-circular indeterminate size="64"/>
-      <div class="mt-4">Loading recipe...</div>
-    </v-card>
+    <v-overlay persistent :model-value="isLoading" class="align-center justify-center">
+      <v-card class="pa-4 text-center">
+        <v-progress-circular indeterminate size="64"/>
+        <div class="mt-4">Loading recipe...</div>
+      </v-card>
     </v-overlay>
 
     <!-- App bar -->
@@ -35,17 +50,19 @@
 
     <!-- edit dialog -->
     <div class="text-center pa-4">
-      <v-dialog v-model="editDialog" width="auto">
-        <RecipeEdit
-        :recipe-name="name"
-        :instructions="instructions"
-        :amounts="amounts"
-        :link="link"
-        :ingredients="ingredients"
-        @cancel="editDialog = false"
-        @save="editRecipe"
-        />
-      </v-dialog>
+      <v-overlay persistent v-model="editDialog" class="align-center justify-center">
+        <v-card style="background-color: #455A64" class="mx-auto d-flex rounded-lg" min-width="800px" :style="{ border: '3px solid #b43e69' }">
+          <RecipeEdit
+          :recipe-name="name"
+          :instructions="instructions"
+          :amounts="amounts"
+          :link="link"
+          :ingredients="ingredients"
+          @cancel="editDialog = false"
+          @save="editRecipe"
+          />
+        </v-card>
+      </v-overlay>
     </div>
   
     <!-- main body -->
@@ -106,6 +123,10 @@ export default {
     const editDialog = ref(false)
 
     const router = useRouter()
+
+    const snackbar = ref(false)
+    const sbText = ref("Save was unsuccessful\nonly the link can be left blank")
+    const sbtimeout = ref(3000)
 
     // gets the recipe information and sets values
     async function getRecipe() {
@@ -169,6 +190,7 @@ export default {
         getRecipe()
       }
       catch (error) {
+        snackbar.value = true
         console.error('Error Updating Recipe: ', error)
       }
     }
@@ -185,6 +207,9 @@ export default {
       isLoading,
       delDialog,
       editDialog,
+      snackbar,
+      sbText,
+      sbtimeout,
       deleteRecipe,
       editRecipe
     }

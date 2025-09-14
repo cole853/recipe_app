@@ -1,5 +1,5 @@
 <template>
-  <v-card style="background-color: #455A64" class="mx-auto rounded-lg" :style="{ width: cardWidth, border: '10px solid #455A64' }">
+  <v-card style="background-color: #455A64" class="mx-auto rounded-lg w-100" :style="{ border: '10px solid #455A64' }">
 
     <v-text-field 
       clearable 
@@ -16,7 +16,7 @@
       variant="solo-filled"
       color="#5EC7A1"
       backgroundColor="white"
-      placeholder="1 c. grapes\n3 chopped apples\n2 c. strawberries\n2 oranges\n..."
+      :placeholder="placeholder_amounts"
       label="Ingredient amounts"
       v-model="amounts"
     />
@@ -26,8 +26,8 @@
       variant="solo-filled"
       color="#5EC7A1"
       backgroundColor="white"
-      label="Search ingredients"
-      placeholder="grapes\napples\nstrawberries\noranges\n..."
+      label="Search ingredients (separate ingredients with newline)"
+      :placeholder="placeholder_ingredients"
       v-model="ingredients"
     />
         
@@ -58,8 +58,7 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue'
-import { useDisplay } from 'vuetify'
+import { ref } from 'vue'
 
 export default {
   name: "RecipeEdit",
@@ -77,16 +76,9 @@ export default {
     const link = ref(props.link)
     const ingredients = ref(props.ingredients)
 
-    const { name } = useDisplay()
+    const placeholder_amounts = ref("1 c. grapes\n3 chopped apples\n2 c. strawberries\n2 oranges\n...")
+    const placeholder_ingredients = ref("grapes\napples\nstrawberries\noranges\n...")
 
-    const cardWidth = computed(() => {
-      const widths = {
-        sm: '600px',
-        md: '700px',
-        lg: '800px'
-      }
-      return widths[name.value] || '800px'
-    })
 
     // save the recipe
     function save() {
@@ -106,12 +98,13 @@ export default {
     }
 
     return {
-      cardWidth,
       recipeName,
       amounts,
       instructions,
       link,
       ingredients,
+      placeholder_ingredients,
+      placeholder_amounts,
       save,
       cancel
     }
